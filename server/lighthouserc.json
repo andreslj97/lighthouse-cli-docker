@@ -6,6 +6,7 @@
         "https://www.chedraui.com.mx/supermercado?workspace=currentmaster"
       ],
       "numberOfRuns": 1,
+      "chromeFlags": "--no-sandbox --headless",
       "throttlingMethod": "simulate",
       "settings": {
         "formFactor": "desktop",
