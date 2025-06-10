@@ -25,7 +25,7 @@ COPY server/lighthouserc.json ./server/lighthouserc.json
 COPY --from=build /app/build ./build
 
 # Instalar solo dependencias necesarias para producción
-RUN npm install --omit=dev
+RUN npm install --omit=dev && npm install @lhci/cli@0.15.0 --save-dev
 
 EXPOSE 3000
 
