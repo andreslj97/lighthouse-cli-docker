@@ -1,0 +1,1 @@
+{"formFactor":"desktop","screenEmulation":{"mobile":false,"width":1360,"height":1020,"deviceScaleFactor":1,"disabled":false},"throttling":{"rttMs":28,"throughputKbps":5000,"requestLatencyMs":28,"downloadThroughputKbps":5000,"uploadThroughputKbps":1000},"chromeFlags":" --headless=new"}
