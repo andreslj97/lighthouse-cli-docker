@@ -97,11 +97,7 @@ export async function runLighthouse() {
         GOOGLE_CLIENT_ID,
         GOOGLE_CLIENT_SECRET,
         GOOGLE_REDIRECT_URI,
-        GOOGLE_ACCESS_TOKEN,
-        GOOGLE_REFRESH_TOKEN,
-        GOOGLE_SCOPE,
-        GOOGLE_TOKEN_TYPE,
-        GOOGLE_EXPIRY_DATE
+        GOOGLE_ACCESS_TOKEN
     } = process.env;
 
     try {
@@ -110,7 +106,7 @@ export async function runLighthouse() {
         }
 
         console.log('📊 Ejecutando Lighthouse CI...');
-        execSync('./node_modules/.bin/lhci collect --config=server/lighthouserc.json', { stdio: 'inherit' });
+        execSync('npx lhci collect --config=server/lighthouserc.json', { stdio: 'inherit' });
 
         console.log("🪪 Cargar credenciales...");
 
