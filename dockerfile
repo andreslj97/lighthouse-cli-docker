@@ -1,23 +1,22 @@
-# Start your image with a node base image
+# FASE 1: Build de React
 FROM node:20-alpine
-
-# The /app directory should act as the main application directory
 WORKDIR /app
-
-# Copy the app package and package-lock.json file
 COPY package*.json ./
-
-# Copy local directories to the current local directory of our docker image (/app)
 COPY ./src ./src
 COPY ./public ./public
+RUN npm install
+RUN npm run build
 
-# Install node packages, install serve, build the app, and remove dependencies at the end
-RUN npm install \
-    && npm install -g serve \
-    && npm run build \
-    && rm -fr node_modules
+# FASE 2: Backend con Express
+FROM node:20-alpine
+WORKDIR /app
+
+# Copiar solo lo necesario para backend
+COPY package*.json ./
+COPY ./server ./server
+
+RUN npm install --only=production
 
 EXPOSE 3000
 
-# Start the app using serve command
-CMD [ "serve", "-s", "build" ]
+CMD ["npm", "start"]
