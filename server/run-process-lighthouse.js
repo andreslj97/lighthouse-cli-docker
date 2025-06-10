@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { google } from 'googleapis';
+import puppeteer from 'puppeteer';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -106,7 +107,11 @@ export async function runLighthouse() {
         }
 
         console.log('📊 Ejecutando Lighthouse CI...');
-        execSync('npx lhci collect --config=server/lighthouserc.json', { stdio: 'inherit' });
+
+        const chromePath = puppeteer.executablePath();
+        process.env.CHROME_PATH = chromePath;
+
+        execSync(`npx lhci collect --config=server/lighthouserc.json`, { stdio: 'inherit' });
 
         console.log("🪪 Cargar credenciales...");
 
