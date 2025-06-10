@@ -107,7 +107,7 @@ export async function runLighthouse() {
 
         console.log('📊 Ejecutando Lighthouse CI...');
 
-        execSync(`npx lhci collect --config=server/lighthouserc.json`, { stdio: 'inherit' });
+        execSync(`npx lhci collect --config=server/lighthouserc.json --chrome-flags=--no-sandbox --headless`, { stdio: 'inherit' });
 
         console.log("🪪 Cargar credenciales...");
 
