@@ -12,33 +12,27 @@ RUN npm install && npm run build
 # FASE 2: Backend con Express + Lighthouse CI
 FROM node:20
 
-# Instala Chromium y dependencias
+# Instalar Chromium desde los paquetes oficiales de Debian
 RUN apt-get update && \
-    apt-get install -y \
-    chromium-browser \
+    apt-get install -y chromium \
     --no-install-recommends && \
-    ln -sf /usr/bin/chromium-browser /usr/bin/chromium && \
     rm -rf /var/lib/apt/lists/*
-
-RUN ln -sf /usr/bin/chromium-browser /usr/bin/chromium
 
 WORKDIR /app
 
-# Copiar solo lo necesario del backend
+# Copiar archivos necesarios
 COPY package*.json ./
 COPY ./server ./server
-
-# Copiar configuración y archivos necesarios para Lighthouse CI
 COPY .lighthouseci ./.lighthouseci
 COPY server/lighthouserc.json ./server/lighthouserc.json
 
-# Copiar el frontend compilado
+# Copiar build de frontend
 COPY --from=build /app/build ./build
 
-# Instalar dependencias de producción + lhci CLI
+# Instalar dependencias de producción y lhci
 RUN npm install --omit=dev && npm install @lhci/cli@0.15.0 --save-dev
 
-# Establecer variable de entorno CHROME_PATH para Lighthouse
+# Variable para que LHCI encuentre Chromium
 ENV CHROME_PATH=/usr/bin/chromium
 
 EXPOSE 3000
