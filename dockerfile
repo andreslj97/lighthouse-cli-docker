@@ -12,10 +12,15 @@ RUN npm install && npm run build
 # FASE 2: Backend con Express + Lighthouse CI
 FROM node:20
 
-# Instala Chromium
+# Instala Chromium y dependencias
 RUN apt-get update && \
-    apt-get install -y chromium && \
-    ln -s /usr/bin/chromium /usr/bin/chromium-browser
+    apt-get install -y \
+    chromium-browser \
+    --no-install-recommends && \
+    ln -sf /usr/bin/chromium-browser /usr/bin/chromium && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN ln -sf /usr/bin/chromium-browser /usr/bin/chromium
 
 WORKDIR /app
 
