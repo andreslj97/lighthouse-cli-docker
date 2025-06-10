@@ -12,7 +12,10 @@ WORKDIR /app
 
 # Instalar dependencias necesarias para Chrome
 RUN apt-get update && \
-    apt-get install -y wget unzip ca-certificates fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 xdg-utils --no-install-recommends && \
+    apt-get install -y wget unzip ca-certificates fonts-liberation \
+    libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 \
+    libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 \
+    libxdamage1 libxrandr2 xdg-utils --no-install-recommends && \
     wget -q https://storage.googleapis.com/chrome-for-testing-public/121.0.6167.85/linux/x64/chrome-linux64.zip && \
     unzip chrome-linux64.zip && \
     mv chrome-linux64 /opt/chrome && \
