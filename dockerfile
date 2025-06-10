@@ -2,38 +2,40 @@
 FROM node:20-alpine as build
 WORKDIR /app
 
-# Instalar dependencias y construir React
+# Copiar archivos necesarios para build
 COPY package*.json ./
 COPY ./src ./src
 COPY ./public ./public
 
 RUN npm install && npm run build
 
-# FASE 2: Backend con Express + Lighthouse CI
-FROM node:20
+# FASE 2: Backend + Lighthouse CI
+FROM node:20-slim
 
-# Instalar Chromium desde los paquetes oficiales de Debian
+# Instala Chromium (versión ligera)
 RUN apt-get update && \
-    apt-get install -y chromium \
-    --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y wget ca-certificates fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 xdg-utils --no-install-recommends && \
+    wget -q https://storage.googleapis.com/chrome-for-testing-public/121.0.6167.85/linux/x64/chrome-linux64.zip && \
+    unzip chrome-linux64.zip && \
+    mv chrome-linux64 /opt/chrome && \
+    ln -s /opt/chrome/chrome /usr/bin/chromium && \
+    rm -rf /var/lib/apt/lists/* chrome-linux64.zip
+
+ENV CHROME_PATH=/usr/bin/chromium
 
 WORKDIR /app
 
-# Copiar archivos necesarios
+# Copiar backend y configuración
 COPY package*.json ./
 COPY ./server ./server
 COPY .lighthouseci ./.lighthouseci
 COPY server/lighthouserc.json ./server/lighthouserc.json
 
-# Copiar build de frontend
+# Copiar frontend ya compilado
 COPY --from=build /app/build ./build
 
-# Instalar dependencias de producción y lhci
+# Instalar dependencias necesarias
 RUN npm install --omit=dev && npm install @lhci/cli@0.15.0 --save-dev
-
-# Variable para que LHCI encuentre Chromium
-ENV CHROME_PATH=/usr/bin/chromium
 
 EXPOSE 3000
 
