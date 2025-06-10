@@ -1,24 +1,31 @@
-# FASE 1: Build de React
+# FASE 1: Build del frontend React
 FROM node:20-alpine as build
 WORKDIR /app
+
+# Instalar dependencias y construir React
 COPY package*.json ./
 COPY ./src ./src
 COPY ./public ./public
-RUN npm install
-RUN npm run build
 
-# FASE 2: Backend con Express
+RUN npm install && npm run build
+
+# FASE 2: Backend con Express + Lighthouse CLI
 FROM node:20-alpine
 WORKDIR /app
 
-# Copiar solo lo necesario para backend
+# Copiar solo lo necesario del backend
 COPY package*.json ./
 COPY ./server ./server
 
-# Copiar build del frontend
+# Copiar configuración y archivos necesarios para Lighthouse CI
+COPY .lighthouseci ./.lighthouseci
+COPY server/lighthouserc.json ./server/lighthouserc.json
+
+# Copiar la carpeta build generada por React
 COPY --from=build /app/build ./build
 
-RUN npm install --only=production
+# Instalar solo dependencias necesarias para producción
+RUN npm install --omit=dev
 
 EXPOSE 3000
 
