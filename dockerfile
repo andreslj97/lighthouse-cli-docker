@@ -1,5 +1,5 @@
 # FASE 1: Build de React
-FROM node:20-alpine
+FROM node:20-alpine as build
 WORKDIR /app
 COPY package*.json ./
 COPY ./src ./src
@@ -14,6 +14,9 @@ WORKDIR /app
 # Copiar solo lo necesario para backend
 COPY package*.json ./
 COPY ./server ./server
+
+# Copiar build del frontend
+COPY --from=build /app/build ./build
 
 RUN npm install --only=production
 
