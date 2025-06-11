@@ -33,7 +33,7 @@ COPY server/lighthouserc.json ./server/lighthouserc.json
 COPY --from=build /app/build ./build
 
 # Instala dependencias (solo producción + Lighthouse CI)
-RUN npm install && npm install @lhci/cli@0.15.0
+RUN npm uninstall lhci@4.1.1 && npm install && npm install @lhci/cli@0.15.0
 
 EXPOSE 3000
 
