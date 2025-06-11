@@ -28,9 +28,11 @@ COPY server/lighthouserc.json ./server/lighthouserc.json
 COPY --from=build /app/build ./build
 
 # Instala solo producción + LHCI
-RUN npm install --omit=dev && npm install @lhci/cli
+RUN npm install --omit=dev && npm install -g @lhci/cli
 
 EXPOSE 3000
 
 # Puedes usar una entrada para que ejecute Lighthouse automáticamente
-CMD ["sh", "-c", "npm start & sleep 5 && npm run lhci"]
+#CMD ["sh", "-c", "npm start & sleep 5 && npm run lhci"]
+CMD ["sh", "-c", "npm start & sleep 5 && npx lhci autorun"]
+
