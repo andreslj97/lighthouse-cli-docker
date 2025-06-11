@@ -28,6 +28,7 @@
       }
     },
     "assert": {
+      "preset": "lighthouse:recommended",
       "assertions": {
         "categories:performance": [
           "warn",
