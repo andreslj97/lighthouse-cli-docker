@@ -8,7 +8,8 @@
     "dev": "nodemon server/index.js",
     "build": "react-scripts build",
     "lint": "eslint ./src",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
