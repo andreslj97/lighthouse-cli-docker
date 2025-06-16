@@ -31,7 +31,7 @@
       "preset": "lighthouse:recommended",
       "assertions": {
         "categories:performance": [
-          "warn",
+          "warn", 
           {
             "minScore": 0.7
           }
