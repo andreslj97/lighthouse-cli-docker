@@ -102,7 +102,7 @@ export async function runLighthouse() {
 
     try {
         if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !GOOGLE_ACCESS_TOKEN) {
-            throw new Error('Faltan variables de entorno para la autenticación con Google.');
+            throw new Error('Faltan variables de entorno para la autenticación con Google.'); 
         }
 
         console.log('📊 Ejecutando Lighthouse CI...');
