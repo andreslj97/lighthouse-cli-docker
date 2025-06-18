@@ -1,12 +1,17 @@
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
+import puppeteer from 'puppeteer';
+import lighthouse from 'lighthouse';
+import { URL } from 'url';
 
 dotenv.config();
 
-const lhciTempDir = path.join(process.cwd(), '.lighthouseci');
+const lhciTempDir = path.join(process.cwd(), 'lighthouse-report');
+if (!fs.existsSync(lhciTempDir)) {
+    fs.mkdirSync(lhciTempDir);
+}
 
 const {
     GOOGLE_CLIENT_ID,
@@ -26,15 +31,13 @@ async function loadCredentials() {
         GOOGLE_REDIRECT_URI
     );
 
-    const googleToken = {
-        "access_token": GOOGLE_ACCESS_TOKEN,
-        "refresh_token": GOOGLE_REFRESH_TOKEN,
-        "scope": GOOGLE_SCOPE,
-        "token_type": GOOGLE_TOKEN_TYPE,
-        "expiry_date": GOOGLE_EXPIRY_DATE
-    }
-
-    oAuth2Client.setCredentials(googleToken);
+    oAuth2Client.setCredentials({
+        access_token: GOOGLE_ACCESS_TOKEN,
+        refresh_token: GOOGLE_REFRESH_TOKEN,
+        scope: GOOGLE_SCOPE,
+        token_type: GOOGLE_TOKEN_TYPE,
+        expiry_date: GOOGLE_EXPIRY_DATE
+    });
 
     return oAuth2Client;
 }
@@ -48,16 +51,12 @@ async function uploadToDrive(auth) {
             name: file,
             time: fs.statSync(path.join(lhciTempDir, file)).mtime.getTime(),
         }))
-        .sort((a, b) => b.time - a.time);
+        .sort((a, b) => b.time - a.time)
+        .slice(0, 2);
 
-    if (htmlReports.length < 1) {
-        throw new Error('No se encontró ningún archivo HTML de reporte en ' + lhciTempDir);
-    }
-
-    const filesToUpload = htmlReports.slice(0, 2); // Subir los dos más recientes
     const urls = [];
 
-    for (const fileInfo of filesToUpload) {
+    for (const fileInfo of htmlReports) {
         const reportPath = path.join(lhciTempDir, fileInfo.name);
 
         const fileMetadata = {
@@ -91,31 +90,55 @@ async function uploadToDrive(auth) {
     return urls;
 }
 
-export async function runLighthouse() {
+async function runAudit(url) {
+    const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
 
-    const {
-        GOOGLE_CLIENT_ID,
-        GOOGLE_CLIENT_SECRET,
-        GOOGLE_REDIRECT_URI,
-        GOOGLE_ACCESS_TOKEN
-    } = process.env;
+    const { port } = new URL(browser.wsEndpoint());
 
-    try {
-        if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !GOOGLE_ACCESS_TOKEN) {
-            throw new Error('Faltan variables de entorno para la autenticación con Google.'); 
+    const result = await lighthouse(url, {
+        port,
+        output: 'html',
+        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        formFactor: "desktop",
+        screenEmulation: {
+            "mobile": false,
+            "width": 1360,
+            "height": 1020,
+            "deviceScaleFactor": 1,
+            "disabled": false
         }
 
-        console.log('📊 Ejecutando Lighthouse CI...');
+    });
 
-        execSync(`npx lhci collect --config=server/lighthouserc.json --chrome-flags=--no-sandbox --headless`, { stdio: 'inherit' });
+    const reportHtml = result.report;
+    const filename = `lighthouse-${Date.now()}.html`;
+    const filePath = path.join(lhciTempDir, filename);
+    fs.writeFileSync(filePath, reportHtml);
 
-        console.log("🪪 Cargar credenciales...");
+    console.log(`📄 Reporte generado: ${filePath}`);
+    await browser.close();
+}
 
+export async function runLighthouse() {
+    try {
+        const urlsToAudit = [
+            "https://www.chedraui.com.mx/supermercado?workspace=betaplpload",
+            "https://www.chedraui.com.mx/supermercado?workspace=currentmaster"
+        ];
+
+        console.log('📊 Ejecutando auditorías Lighthouse...');
+        for (const url of urlsToAudit) {
+            await runAudit(url);
+        }
+
+        console.log("🔐 Cargando credenciales...");
         const auth = await loadCredentials();
-        console.log("🪪 Cargar archivos...");
-        const urls = await uploadToDrive(auth);
 
-        console.log('✅ Reportes subidos a Google Drive:', urls);
+        console.log("📤 Subiendo reportes a Google Drive...");
+        const urls = await uploadToDrive(auth);
 
         const logFilePath = path.join(process.cwd(), 'lhci-report-log.txt');
         const timestamp = new Date().toISOString();
@@ -125,7 +148,8 @@ export async function runLighthouse() {
             fs.appendFileSync(logFilePath, logEntry);
         });
 
-        return { url: urls };
+        console.log('✅ Reportes subidos y log actualizado');
+        return { urls };
     } catch (error) {
         console.error('❌ Error en runLighthouse:', error.message);
         throw error;
