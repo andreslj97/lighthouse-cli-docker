@@ -39,6 +39,10 @@ COPY --from=build /app/build ./build
 # Instala solo dependencias de producción + Lighthouse CI global
 RUN npm ci --omit=dev && npm install -g @lhci/cli
 
+# Crear usuario no-root
+RUN useradd -m lhciuser
+USER lhciuser
+
 EXPOSE 3000
 
 CMD ["npm", "start"]

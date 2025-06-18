@@ -7,7 +7,7 @@
       ],
       "numberOfRuns": 1,
       "chromePath": "/usr/bin/chromium",
-      "chromeFlags": "--no-sandbox --headless --disable-gpu --disable-dev-shm-usage",
+      "chromeFlags": "--no-sandbox --headless --disable-gpu --disable-dev-shm-usage --disable-setuid-sandbox",
       "throttlingMethod": "simulate",
       "settings": {
         "formFactor": "desktop",
